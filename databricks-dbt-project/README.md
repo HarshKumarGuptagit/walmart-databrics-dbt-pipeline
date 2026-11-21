@@ -107,8 +107,6 @@ dbt connects to Databricks using the `dbt-databricks` adapter.
          token: "{{ env_var('DATABRICKS_TOKEN') }}"
          threads: 4
    ```
-   > [!IMPORTANT]
-   > Never hardcode your tokens or passwords in `profiles.yml`. Using `{{ env_var('...') }}` ensures credentials remain externalized.
 
 ---
 
@@ -194,67 +192,9 @@ flowchart TD
 
 ---
 
-### Step 6: Data Source ER Model & dbt Denormalization Strategy
+### Step 6: dbt Denormalization Strategy (One Big Table)
 
-To understand how dbt models the data, here is the relational source ER diagram and how `obt_b.sql` consolidates it:
-
-```mermaid
-erDiagram
-    CUSTOMERS ||--o{ ORDERS : "places (customer_id)"
-    STORES ||--o{ ORDERS : "fulfills (store_id)"
-    STORES ||--o{ EMPLOYEES : "employs (store_id)"
-    ORDERS ||--|{ ORDER_ITEMS : "contains (order_id)"
-    PRODUCTS ||--o{ ORDER_ITEMS : "ordered in (product_id)"
-
-    CUSTOMERS {
-        bigint customer_id PK
-        varchar first_name
-        varchar last_name
-        varchar city
-        varchar country
-    }
-
-    STORES {
-        bigint store_id PK
-        varchar store_name
-        varchar city
-        varchar country
-    }
-
-    EMPLOYEES {
-        bigint employee_id PK
-        bigint store_id FK
-        varchar first_name
-        varchar last_name
-        numeric salary
-    }
-
-    PRODUCTS {
-        bigint product_id PK
-        varchar product_name
-        varchar category
-        numeric price
-    }
-
-    ORDERS {
-        bigint order_id PK
-        bigint customer_id FK
-        bigint store_id FK
-        timestamp order_timestamp
-        numeric total_amount
-    }
-
-    ORDER_ITEMS {
-        bigint order_item_id PK
-        bigint order_id FK
-        bigint product_id FK
-        int quantity
-        numeric unit_price
-        numeric line_amount
-    }
-```
-
-In [obt_b.sql](file:///d:/DE_Projects/walmart-de-project-dbt/databricks-dbt-project/walmart_project/models/silver_b/obt_b.sql), dbt executes automated dynamic left joins starting from `orders_t`:
+In [obt_b.sql](walmart_project/models/silver_b/obt_b.sql), dbt executes automated left joins anchored on `orders_t`:
 1. `orders_t` ➔ `customers_t` ON `customer_id`
 2. `orders_t` ➔ `order_items_t` ON `order_id`
 3. `order_items_t` ➔ `products_t` ON `product_id`

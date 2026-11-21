@@ -51,108 +51,23 @@ This guide walks you through:
 
 ### Step 2: Configure Local Environment Variables
 
-1. In this directory, copy the template file [.env.example](file:///d:/DE_Projects/walmart-de-project-dbt/Walmart%20Neon%20DB%20Postgres%20Setup/.env.example) to `.env`:
+1. Copy the template file [.env.example](.env.example) to `.env`:
    ```bash
    cp .env.example .env
    ```
-2. Open `.env` and paste your actual connection string and Neon API key:
+2. Open `.env` and set your connection parameters:
    ```ini
    POSTGRES_CONN=postgresql://neondb_owner:YOUR_PASSWORD@ep-dark-mountain-armwsg9l.c-4.us-west-2.aws.neon.tech/walmart_db?sslmode=require
    NEON_API_KEY=napi_YOUR_NEON_API_KEY
    ```
-   > [!NOTE]
-   > The `.env` file is strictly ignored by Git to protect your database credentials.
 
 ---
 
-### Step 3: Source Relational Data Model & ER Diagram
+### Step 3: Source Relational Data Model (ERD)
 
-Before running the DDL, review the Entity-Relationship (ER) model below. It defines the 6 normalized retail entities and their foreign key constraints:
+The source schema defines 6 relational entities representing retail operations:
 
 ![Walmart Relational ER Diagram](../assets/walmart-er-diagram.png)
-
-```mermaid
-erDiagram
-    CUSTOMERS ||--o{ ORDERS : "places"
-    STORES ||--o{ ORDERS : "fulfills"
-    STORES ||--o{ EMPLOYEES : "employs"
-    ORDERS ||--|{ ORDER_ITEMS : "contains"
-    PRODUCTS ||--o{ ORDER_ITEMS : "ordered in"
-
-    CUSTOMERS {
-        bigint customer_id PK
-        varchar first_name
-        varchar last_name
-        varchar email
-        varchar phone
-        varchar city
-        varchar province
-        varchar country
-        timestamp created_timestamp
-        timestamp updated_timestamp
-        char is_active
-    }
-
-    STORES {
-        bigint store_id PK
-        varchar store_name
-        varchar city
-        varchar province
-        varchar country
-        timestamp created_timestamp
-        timestamp updated_timestamp
-        char is_active
-    }
-
-    EMPLOYEES {
-        bigint employee_id PK
-        bigint store_id FK
-        varchar first_name
-        varchar last_name
-        varchar email
-        varchar job_title
-        numeric salary
-        timestamp created_timestamp
-        timestamp updated_timestamp
-        char is_active
-    }
-
-    PRODUCTS {
-        bigint product_id PK
-        varchar product_name
-        varchar category
-        varchar brand
-        numeric price
-        timestamp created_timestamp
-        timestamp updated_timestamp
-        char is_active
-    }
-
-    ORDERS {
-        bigint order_id PK
-        bigint customer_id FK
-        bigint store_id FK
-        timestamp order_timestamp
-        varchar payment_method
-        varchar order_status
-        numeric total_amount
-        timestamp created_timestamp
-        timestamp updated_timestamp
-        char is_active
-    }
-
-    ORDER_ITEMS {
-        bigint order_item_id PK
-        bigint order_id FK
-        bigint product_id FK
-        int quantity
-        numeric unit_price
-        numeric line_amount
-        timestamp created_timestamp
-        timestamp updated_timestamp
-        char is_active
-    }
-```
 
 ---
 
